@@ -1,60 +1,58 @@
 ## Starter Next.js Dashboard
 
-A production-ready Next.js starter with clean architecture, credentials-based auth, Prisma/PostgreSQL, shadcn/ui, and batteries-included DX.
+A production-grade Next.js starter focused on clean architecture, credentials-based authentication, Prisma/PostgreSQL, and a polished DX powered by shadcn/ui, Tailwind CSS, and full TypeScript coverage.
 
 ### Highlights
 
-- **Next.js App Router + Server Actions** with strict TypeScript.
-- **NextAuth (Auth.js)** credentials provider with bcrypt hashing + secure middleware routing.
-- **Prisma + PostgreSQL** (Docker compose) with migrations and a seeded admin (`admin@example.com / Admin123!`).
-- **Feature-first structure** (`src/features`, `src/shared`, `src/db`, `src/app`) to keep UI, domain, and infrastructure separated.
-- **Tailwind + shadcn/ui** design system, global light/dark theme driven by `src/shared/config/theme.ts`.
-- **Users Management** dashboard page: server-side pagination/search/sort, zod validation, toasts, and role-protected CRUD.
-- **Utilities**: AES-256-GCM crypto helpers, pagination/query-builder, date formatting, logger, standard server action error handling.
-- **Optional scaling helpers**: pluggable Redis cache/rate limiting and an HTTP client abstraction (fetch or Axios) that stay dormant unless configured.
-- **Tooling**: ESLint, Prettier, Vitest, Husky + lint-staged.
+- **Next.js App Router + Server Actions** with strict TypeScript and domain-focused features.
+- **Auth.js (NextAuth) credentials flow** using bcrypt hashing, middleware-protected routes, and seeded admin access.
+- **Prisma + PostgreSQL** (Docker Compose) including migrations, seeding, and provider-aware helpers for other SQL engines.
+- **Feature-first structure** that isolates UI, domain logic, and infrastructure (`src/features`, `src/shared`, `src/db`, `src/app`).
+- **Design system ready**: Tailwind + shadcn/ui components, global light/dark theming defined in `src/shared/config/theme.ts`.
+- **Users management demo**: server-side pagination/search/sort, zod validation, toasts, and role-based CRUD.
+- **DX tooling**: ESLint, Prettier, Vitest, Husky + lint-staged, reusable server-action utilities, AES-256-GCM crypto helpers, pagination/query builders, and optional Redis/Axios adapters that stay idle unless configured.
 
-### Project Structure
+### Architecture Overview
 
 ```
 src/
-  app/         Route groups: (auth)/login, (dashboard)/dashboard, api handlers, middleware
+  app/         Route groups, api handlers, middleware
   features/
-    auth/      Auth config, login server action, helpers
-    users/     Schemas, queries, server actions, UI components
+    auth/      Auth config, login action, helpers
+    users/     Schemas, queries, server actions, UI
   shared/
     config/    env + theme tokens
-    layouts/   Dashboard shell (sidebar + topbar)
+    layouts/   Dashboard shell (sidebar/topbar)
     lib/       Utilities (crypto/pagination/query/error/date/logger)
     providers/ Theme provider
-    ui/        shadcn-based primitives + design system helpers
-  db/          Prisma client
+    ui/        shadcn primitives + design tokens
+  db/          Prisma client + provider helpers
 ```
 
-### Prerequisites
+### Requirements
 
-- Node.js 18+ and pnpm
-- Docker (for the PostgreSQL service)
+- Node.js 18+ with `pnpm`.
+- Docker Desktop or compatible runtime (for PostgreSQL).
+- `openssl` (or similar) for generating secure secrets.
 
-### Setup
+### Getting Started
 
-1. **Environment**
+1. **Environment variables**
 
    ```bash
    cp .env.example .env
    ```
 
-   Fill in:
+   Populate the following:
 
-   - `DATABASE_URL` (matches docker compose defaults)
-   - `NEXTAUTH_SECRET` (run `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` (e.g., `http://localhost:3000`)
-   - `ENCRYPTION_KEY` (base64 32 bytes, e.g., `openssl rand -base64 32`)
-   - `DATABASE_PROVIDER` + provider-specific `DATABASE_URL` (see Database Portability below).
-   - *(Optional)* `REDIS_URL` for shared cache/rate limiting and `HTTP_BASE_URL` / `HTTP_TIMEOUT_MS` for the HTTP client.
-   - *(Optional)* `REQUIRE_DISTRIBUTED_CACHE=true` if you want production deployments to fail when Redis is unavailable.
+   - `DATABASE_URL` - matches the Docker defaults unless you customize ports.
+   - `NEXTAUTH_SECRET` - run `openssl rand -base64 32`.
+   - `NEXTAUTH_URL` - e.g., `http://localhost:3000`.
+   - `ENCRYPTION_KEY` - base64 32 bytes (`openssl rand -base64 32`).
+   - `DATABASE_PROVIDER` + provider-specific `DATABASE_URL` if you are not on PostgreSQL.
+   - Optional: `REDIS_URL`, `HTTP_BASE_URL`, `HTTP_TIMEOUT_MS`, `REQUIRE_DISTRIBUTED_CACHE`.
 
-2. **Database**
+2. **Database & Prisma**
 
    ```bash
    docker compose up -d
@@ -63,119 +61,75 @@ src/
    pnpm prisma:seed
    ```
 
-3. **Install deps & run**
+3. **Install dependencies**
 
    ```bash
- pnpm install
-  pnpm dev
-  ```
+   pnpm install
+   ```
 
-   Visit `http://localhost:3000` and log in with the seeded admin.
+### Running & Deployment
 
-### Perintah Prisma (Ringkasan)
+- **Development**: `pnpm dev` starts the Next.js dev server with HMR at `http://localhost:3000`. Log in using the seeded admin `admin@example.com / Admin123!`.
+- **Production**: `pnpm build` compiles the app and `pnpm start` runs the optimized server. Ensure `DATABASE_URL`, `NEXTAUTH_URL`, and secrets are set in the production environment.
 
-Gunakan rangkaian perintah berikut untuk mengelola Prisma secara cepat ketika mengembangkan fitur baru:
+### Prisma Workflow
 
-```bash
-pnpm prisma:format    # Rapikan schema.prisma
-pnpm prisma:generate  # Regenerasi Prisma Client
-pnpm prisma:migrate   # Terapkan migrasi dev
-pnpm prisma:seed      # Seed ulang data demo/admin
-pnpm prisma:studio    # Buka Prisma Studio untuk inspeksi data
-```
-
-### Menjalankan Aplikasi Secara Lokal
-
-Setelah dependensi terpasang dan database siap, jalankan:
+Use these commands to keep your schema and client in sync:
 
 ```bash
-pnpm dev              # Mode pengembangan dengan HMR
+pnpm prisma:format    # Format prisma/schema.prisma
+pnpm prisma:generate  # Regenerate Prisma Client
+pnpm prisma:migrate   # Apply dev migrations
+pnpm prisma:seed      # Seed demo/admin data
+pnpm prisma:studio    # Inspect data via Prisma Studio
 ```
 
-Untuk build dan menjalankan hasil build produksi:
+### Tooling Commands
 
-```bash
-pnpm build            # Build Next.js
-pnpm start            # Menjalankan server hasil build
-```
+| Command       | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `pnpm lint`   | Run ESLint with project rules                    |
+| `pnpm format` | Run Prettier on supported files                  |
+| `pnpm audit`  | Scan dependencies for high-severity vulnerabilities |
 
 ### Database Portability
 
-- **Supported providers:** PostgreSQL, MySQL, SQL Server, and Oracle (Oracle requires Prisma’s preview driver; expect slower migrations and fewer native functions).
-- **Switching providers:** open `prisma/schema.prisma`, locate the `datasource db` block, and change `provider = "postgresql"` to the target provider (`"mysql"`, `"sqlserver"`, or `"oracle"`). Update `DATABASE_PROVIDER` + `DATABASE_URL` in `.env`, then run:
+- **Supported providers**: PostgreSQL, MySQL, SQL Server, Oracle (Oracle uses Prisma's preview driver; expect slower migrations).
+- **Switching providers**:
 
   ```bash
+  # Update prisma/schema.prisma datasource provider
   pnpm prisma:format
   pnpm prisma:migrate reset --skip-seed
   pnpm prisma:migrate
   pnpm prisma:generate
   ```
 
-  Each environment should stick to a single provider. Never apply migrations generated for a different provider to production.
-- **Connection strings:** `.env.example` includes templates for every provider. SQL Server connection strings must include `encrypt=true`. Oracle uses the `oracle://USER:PASSWORD@HOST:PORT/SERVICE` format that Prisma expects.
-- **Modeling constraints:** Prisma models only use portable scalar types (`String`, `Int`, `BigInt`, `Boolean`, `DateTime`, `Decimal`). IDs rely on Prisma-managed `cuid()` values, so no database-specific sequences or UUID extensions are required. Enums (e.g., `Role`) represent domain concepts only.
-- **Provider-aware behavior:** `src/db/provider.ts` reads `DATABASE_PROVIDER` and exposes feature flags. Queries such as `getUsers` only enable case-insensitive filters when a provider guarantees support.
-- **Database boundary:** all Prisma usage lives in `src/features/**/(queries|server)` folders. ESLint forbids importing `@/db` or `@prisma/client` from UI/shared code, ensuring a clear separation.
-- **Migrations:** keep a dedicated migration history per provider (e.g., `prisma/migrations` for PostgreSQL, `prisma/migrations.mysql` when targeting MySQL). Reset or fork migrations before switching providers to avoid mixing SQL dialects.
-- **Known limitations:** Provider-specific features such as full-text search, JSON operators, partial indexes, or non-portable data types are intentionally omitted so the starter remains portable. SQL Server and Oracle treat substring filters as case-sensitive because Prisma’s `mode: "insensitive"` is unavailable there; implement provider-specific fallbacks if you need that behavior.
+  Keep a dedicated migration history per provider (e.g., `prisma/migrations.mysql`). Never mix migration outputs across providers or apply PostgreSQL SQL to another engine.
+- **Connection strings**: `.env.example` includes templates. SQL Server strings must include `encrypt=true`. Oracle uses `oracle://USER:PASSWORD@HOST:PORT/SERVICE`.
+- **Modeling constraints**: Prisma models rely on portable scalar types and Prisma-managed `cuid()` IDs, so no provider-specific extensions are required. Provider-aware logic (e.g., case-insensitive filters) is centralized in `src/db/provider.ts`.
 
 ### Optional Redis & Axios Support
 
-This starter runs perfectly without Redis or Axios. Small projects can use the in-memory cache and the built-in `fetch` HTTP client and never touch these features.
-
-- **Redis (optional):**
-  - Set `REDIS_URL` to enable the Redis cache backend automatically; otherwise, an in-memory cache is used.
-  - Recommended for: rate limiting across multiple instances, caching expensive queries, and any production deployment with more than one server.
-  - Production note: multi-instance deployments must configure Redis so rate limits remain consistent everywhere. You can set `REQUIRE_DISTRIBUTED_CACHE=true` to make production builds exit early instead of silently falling back to the in-memory adapter.
-- **HTTP client module (optional):**
-  - `src/shared/http` exposes a small abstraction with a default `fetch` client and an Axios-powered client.
-  - Axios is ideal for large integrations that need interceptors, retries, upload/download progress, or token refresh workflows.
-  - Features can swap clients by importing from `@/shared/http` without depending on Axios directly.
-- **Environment variables:**
-  - `REDIS_URL` - optional Redis connection string.
-  - `REQUIRE_DISTRIBUTED_CACHE` - set to `true` when Redis must be present (recommended for multi-instance deployments).
-  - `HTTP_BASE_URL` - optional base URL used by HTTP clients.
-  - `HTTP_TIMEOUT_MS` - optional per-request timeout (defaults to 10s).
-  - HTTP_TIMEOUT_MS - optional per-request timeout (defaults to 10s).
-
-### Scripts
-
-| Command              | Description                             |
-| -------------------- | --------------------------------------- |
-| `pnpm dev`           | Start Next.js dev server                |
-| `pnpm build`         | Production build                        |
-| `pnpm start`         | Run built app                           |
-| `pnpm lint`          | ESLint (strict, Next.js aware)          |
-| `pnpm format`        | Prettier                                |
-| `pnpm audit`         | Dependency vulnerability scan (high+)   |
-| `pnpm test`          | Vitest unit + integration tests         |
-| `pnpm prisma:format` | Prisma schema formatter                 |
-| `pnpm prisma:generate` | Generate Prisma Client                |
-| `pnpm prisma:migrate` | Run dev migrations                     |
-| `pnpm prisma:studio` | Prisma Studio UI                        |
-| `pnpm prisma:seed`   | Seed database entries                   |
-
-Husky + lint-staged run lint/format on staged files before commit.
+- Leave `REDIS_URL` undefined to use the in-memory cache; set it to enable Redis-backed caching and rate limiting. In multi-instance deployments, set `REQUIRE_DISTRIBUTED_CACHE=true` so builds fail fast if Redis is unavailable.
+- `src/shared/http` exposes a lightweight abstraction that defaults to `fetch` but can swap to an Axios-based client without updating feature code. Configure `HTTP_BASE_URL` and `HTTP_TIMEOUT_MS` as needed.
 
 ### Testing
 
-`pnpm test` runs the Vitest suite (fast, deterministic, Node environment). Additional helpers:
+- `pnpm test` runs the Vitest suite (Node environment) covering shared helpers and representative feature queries.
+- `pnpm test:watch` enables watch mode during development.
+- `pnpm test:coverage` generates V8 coverage reports.
 
-- `pnpm test:watch` – watch mode during development.
-- `pnpm test:coverage` – coverage report using V8 instrumentation.
+### Pre-commit Workflow
 
-Current tests focus on shared helpers (crypto, pagination, query/query merging, error handling) and representative feature queries (`getUsers` with mocked Prisma).
+- Husky installs automatically through the `prepare` script (`pnpm install` will set it up).
+- The pre-commit hook runs `lint-staged`, formatting files via Prettier and fixing/linting TS/JS via ESLint.
+- Temporarily disable hooks by setting `PRE_COMMIT_ENABLED=false` (env var) or editing `config/tooling.ts`. Use `git commit --no-verify` for a one-off bypass.
+- Recommended CI gate: `pnpm lint && pnpm typecheck && pnpm test`.
 
-### Pre-commit workflow
+### Additional Notes
 
-- Husky installs automatically via `pnpm install` (see the `prepare` script). The pre-commit hook runs `lint-staged`, which formats staged files with Prettier and fixes/lints TS/JS files with ESLint.
-- To temporarily disable the hook project-wide, either set `PRE_COMMIT_ENABLED=false` in your environment or update `config/tooling.ts` (env takes precedence). When disabled, the hook prints “Pre-commit checks are disabled via configuration.” and exits successfully.
-- To bypass once, run `git commit --no-verify`.
-- Recommended CI gate: run `pnpm lint && pnpm typecheck && pnpm test` so the server-enforced checks remain the source of truth.
-
-### Notes
-
-- Theme tokens live in `src/shared/config/theme.ts`. Updating those variables rebrands the entire UI (light/dark), and you can switch the preset palette via the `THEME_VARIANT` env (`default`, `red`, `purple`, `blue`).
-- `src/shared/lib/crypto.ts` exposes AES-256-GCM encrypt/decrypt using the validated `ENCRYPTION_KEY`.
-- Role-based access control: only admins hit user management actions, while `/api/me` lets regular users fetch their own profile.
-- Middleware enforces redirects: unauthenticated users go to `/login`, authenticated users hitting `/login` are redirected to `/dashboard`.
+- Theme tokens live in `src/shared/config/theme.ts`. Updating them rebrands the UI, and `THEME_VARIANT` (`default`, `red`, `purple`, `blue`) switches palettes.
+- `src/shared/lib/crypto.ts` provides AES-256-GCM helpers validated against `ENCRYPTION_KEY`.
+- Access control limits user-management actions to admins; `/api/me` lets regular users fetch their profile.
+- Middleware enforces redirects: unauthenticated users go to `/login`, and authenticated users hitting `/login` are redirected to `/dashboard`.
