@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  body[data-sidebar-collapsed="true"] .dashboard-sidebar {
+    width: 4.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  body[data-sidebar-collapsed="true"] .dashboard-sidebar__details,
+  body[data-sidebar-collapsed="true"] .dashboard-sidebar__badge,
+  body[data-sidebar-collapsed="true"] .sidebar-nav__label {
+    display: none;
+  }
+}
